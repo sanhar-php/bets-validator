@@ -4,8 +4,8 @@ namespace BetValidator;
 class Bet
 {
     public $success = true;
-    private $error_codes;
-    public $bestslip;
+    public $error_codes;
+    private $bestslip;
 
     /**
      * Bet constructor.
