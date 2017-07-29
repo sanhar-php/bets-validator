@@ -5,7 +5,7 @@ class Bet
 {
     public $success = true;
     private $error_codes;
-    private $bestslip;
+    public $bestslip;
 
     /**
      * Bet constructor.
