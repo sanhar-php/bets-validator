@@ -1,4 +1,5 @@
 <?php
+
 namespace BetValidator;
 
 class Bet
@@ -53,60 +54,65 @@ class Bet
             $structure = false;
         }
 
-        if (isset($this->bestslip['selections']) && $structure === true) {
+        try {
+            if (isset($this->bestslip['selections']) && $structure === true) {
 
-            foreach ($this->bestslip['selections'] as $index => $section) {
+                foreach ($this->bestslip['selections'] as $index => $section) {
 
-                if (!is_int($section['id'])) {
-                    $structure = false;
-                } else {
-                    array_push($betIds, $section['id']);
-                }
+                    if (!is_int($section['id'])) {
+                        $structure = false;
+                    } else {
+                        array_push($betIds, $section['id']);
+                    }
 
-                // Validate odds: max/max. If passes add to array.
-                if (!is_float($section['odds'])) {
-                    $structure = false;
-                } elseif (1 > $section['odds']) {
-                    array_push($this->bestslip['selections'][$index]['errors'], $this->error_codes[6]);
-                } elseif (10000 < $section['odds']) {
-                    array_push($this->bestslip['selections'][$index]['errors'], $this->error_codes[7]);
-                } else {
-                    array_push($allOds, $section['odds']);
-                }
+                    // Validate odds: max/max. If passes add to array.
+                    if (!is_float($section['odds'])) {
+                        $structure = false;
+                    } elseif (1 > $section['odds']) {
+                        array_push($this->bestslip['selections'][$index]['errors'], $this->error_codes[6]);
+                    } elseif (10000 < $section['odds']) {
+                        array_push($this->bestslip['selections'][$index]['errors'], $this->error_codes[7]);
+                    } else {
+                        array_push($allOds, $section['odds']);
+                    }
 
-                if (!empty($this->bestslip['selections'][$index]['errors'])) {
-                    $this->success = false;
+                    if (!empty($this->bestslip['selections'][$index]['errors'])) {
+                        $this->success = false;
+                    }
                 }
             }
-        }
 
-        // Counting expected win amount and validating it.
-        $expectedWinAmount = array_product($allOds) * $this->bestslip['stake_amount'];
+            // Counting expected win amount and validating it.
+            $expectedWinAmount = array_product($allOds) * $this->bestslip['stake_amount'];
 
-        if ($expectedWinAmount > 20000) {
-            array_push($this->bestslip['errors'], $this->error_codes[9]);
-        }
+            if ($expectedWinAmount > 20000) {
+                array_push($this->bestslip['errors'], $this->error_codes[9]);
+            }
 
-        // Validating stake_amount: max/min.
-        if (0.3 > $this->bestslip['stake_amount']) {
-            array_push($this->bestslip['errors'], $this->error_codes[2]);
-        } elseif (10000 < $this->bestslip['stake_amount']) {
-            array_push($this->bestslip['errors'], $this->error_codes[3]);
-        }
+            // Validating stake_amount: max/min.
+            if (0.3 > $this->bestslip['stake_amount']) {
+                array_push($this->bestslip['errors'], $this->error_codes[2]);
+            } elseif (10000 < $this->bestslip['stake_amount']) {
+                array_push($this->bestslip['errors'], $this->error_codes[3]);
+            }
 
-        // Validating sections: max/min
-        if (1 > count($this->bestslip['selections'])) {
-            array_push($this->bestslip['errors'], $this->error_codes[4]);
-        } elseif (20 < count($this->bestslip['selections'])) {
-            array_push($this->bestslip['errors'], $this->error_codes[5]);
+            // Validating sections: max/min
+            if (1 > count($this->bestslip['selections'])) {
+                array_push($this->bestslip['errors'], $this->error_codes[4]);
+            } elseif (20 < count($this->bestslip['selections'])) {
+                array_push($this->bestslip['errors'], $this->error_codes[5]);
+            }
+
+            if (count($betIds) !== count(array_unique($betIds))) {
+                array_push($this->bestslip['errors'], $this->error_codes[8]);
+            }
+            
+        } catch (\Exception $exception) {
+            $structure = false;
         }
 
         if ($structure === false) {
             array_push($this->bestslip['errors'], $this->error_codes[1]);
-        }
-
-        if (count($betIds) !== count(array_unique($betIds))) {
-            array_push($this->bestslip['errors'], $this->error_codes[8]);
         }
 
         if (!empty($this->bestslip['errors'])) {
@@ -118,7 +124,8 @@ class Bet
      * Returns global errors.
      * @return mixed
      */
-    public function getGlobalErrors() {
+    public function getGlobalErrors()
+    {
         return $this->bestslip['errors'];
     }
 
@@ -126,7 +133,8 @@ class Bet
      * Gets secstions
      * @return array
      */
-    public function getSelectionsErrors() {
+    public function getSelectionsErrors()
+    {
         $errorSelections = [];
 
         // Checking for sections with errors and adding to return array.
